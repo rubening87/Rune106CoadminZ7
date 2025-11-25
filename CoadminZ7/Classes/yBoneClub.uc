@@ -1,0 +1,1 @@
+class yBoneClub extends boneclub;

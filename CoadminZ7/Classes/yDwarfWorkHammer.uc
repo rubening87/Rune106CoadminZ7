@@ -1,0 +1,1 @@
+class yDwarfWorkHammer extends DwarfWorkHammer;

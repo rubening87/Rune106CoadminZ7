@@ -1,0 +1,1 @@
+class yGoblinAxe extends goblinaxe;

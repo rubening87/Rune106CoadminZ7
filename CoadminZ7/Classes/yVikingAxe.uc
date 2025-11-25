@@ -1,0 +1,1 @@
+class yVikingAxe extends VikingAxe;

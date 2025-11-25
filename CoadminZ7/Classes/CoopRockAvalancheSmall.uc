@@ -1,0 +1,1 @@
+class CoopRockAvalancheSmall extends CoopRockAvalanche;

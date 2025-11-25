@@ -1,0 +1,1 @@
+class yRustyMace extends RustyMace;

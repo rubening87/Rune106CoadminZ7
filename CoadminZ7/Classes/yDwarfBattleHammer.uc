@@ -1,0 +1,1 @@
+class yDwarfBattleHammer extends DwarfBattleHammer;

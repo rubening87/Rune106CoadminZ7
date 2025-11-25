@@ -1,0 +1,1 @@
+class yVikingBroadSword extends VikingBroadSword;

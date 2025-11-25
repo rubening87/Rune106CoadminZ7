@@ -1,0 +1,1 @@
+class yTrialPitMace extends TrialPitMace;

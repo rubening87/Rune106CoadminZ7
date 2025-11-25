@@ -1,0 +1,305 @@
+class ArenaMenuRulesBase extends RuneMenuPageWindow;
+
+var RuneMenuServerClientWindow ServerParent;
+
+var bool Initialized;
+
+// Frag Limit
+var UWindowEditControl FragEdit;
+var localized string FragText;
+var localized string FragHelp;
+
+// Time Limit
+var UWindowEditControl TimeEdit;
+var localized string TimeText;
+var localized string TimeHelp;
+
+// X-On-X
+var UWindowEditControl MaxArenaEdit; 
+var localized string MaxArenaText;
+var localized string MaxArenaHelp;
+
+// Match Time-Wait
+var UWindowEditControl MatchWaitEdit;
+var localized string MatchWaitText;
+var localized string MatchWaitHelp;
+
+// Max Players
+var UWindowEditControl MaxPlayersEdit;
+var localized string MaxPlayersText;
+var localized string MaxPlayersHelp;
+
+// Max Spectators
+var UWindowEditControl MaxSpectatorsEdit;
+var localized string MaxSpectatorsText;
+var localized string MaxSpectatorsHelp;
+
+// Weapons Stay
+var UWindowCheckbox WeaponsCheck;
+var localized string WeaponsText;
+var localized string WeaponsHelp;
+
+var float ControlOffset;
+var bool bControlRight;
+
+function Created()
+{
+	local int S;
+	local int ControlWidth, ControlLeft, ControlRight;
+	local int CenterWidth, CenterPos, ButtonWidth, ButtonLeft;
+
+	Super.Created();
+
+	ControlWidth = WinWidth/2.5;
+	ControlLeft = (WinWidth/2 - ControlWidth)/2;
+	ControlRight = WinWidth/2 + ControlLeft;
+
+	CenterWidth = (WinWidth/4)*3;
+	CenterPos = (WinWidth - CenterWidth)/2;
+
+	ButtonWidth = WinWidth - 140;
+	ButtonLeft = WinWidth - ButtonWidth - 40;
+
+	ServerParent = RuneMenuServerClientWindow(GetParent(class'RuneMenuServerClientWindow'));
+	if (ServerParent == None)
+		Log("Error: RuneMenuRulesBase without RuneMenuServerClientWindow parent.");
+
+	// Frag Limit
+	FragEdit = UWindowEditControl(CreateControl(class'UWindowEditControl', ControlLeft, ControlOffset, ControlWidth, 1));
+	FragEdit.SetText(FragText);
+	FragEdit.SetHelpText(FragHelp);
+	FragEdit.SetFont(F_Normal);
+	FragEdit.SetNumericOnly(True);
+	FragEdit.SetMaxLength(3);
+	FragEdit.Align = TA_Left;
+	ControlOffset += 25;
+
+	// Time Limit
+	TimeEdit = UWindowEditControl(CreateControl(class'UWindowEditControl', ControlRight, ControlOffset, ControlWidth, 1));
+	TimeEdit.SetText(TimeText);
+	TimeEdit.SetHelpText(TimeHelp);
+	TimeEdit.SetFont(F_Normal);
+	TimeEdit.SetNumericOnly(True);
+	TimeEdit.SetMaxLength(3);
+	TimeEdit.Align = TA_Left;
+	ControlOffset += 25;
+
+	// X-On-X
+	MaxArenaEdit = UWindowEditControl(CreateControl(class'UWindowEditControl', ControlLeft, ControlOffset, ControlWidth, 1));
+	MaxArenaEdit.SetText(MaxArenaText);
+	MaxArenaEdit.SetHelpText(MaxArenaHelp);
+	MaxArenaEdit.SetFont(F_Normal);
+	MaxArenaEdit.SetNumericOnly(True);
+	MaxArenaEdit.SetMaxLength(1);
+	MaxArenaEdit.Align = TA_Left;
+	MaxArenaEdit.SetDelayedNotify(True);
+	ControlOffset += 25;
+
+	// Match Wait
+	MatchWaitEdit = UWindowEditControl(CreateControl(class'UWindowEditControl', ControlRight, ControlOffset, ControlWidth, 1));
+	MatchWaitEdit.SetText(MatchWaitText);
+	MatchWaitEdit.SetHelpText(MatchWaitHelp);
+	MatchWaitEdit.SetFont(F_Normal);
+	MatchWaitEdit.SetNumericOnly(True);
+	MatchWaitEdit.SetMaxLength(2);
+	MatchWaitEdit.Align = TA_Left;
+	MatchWaitEdit.SetDelayedNotify(True);
+	ControlOffset += 25;
+
+	// WeaponsStay
+	WeaponsCheck = UWindowCheckbox(CreateControl(class'UWindowCheckbox', ControlLeft, ControlOffset, ControlWidth, 1));
+	WeaponsCheck.SetText(WeaponsText);
+	WeaponsCheck.SetHelpText(WeaponsHelp);
+	WeaponsCheck.SetFont(F_Normal);
+	WeaponsCheck.bChecked = ServerParent.GameClass.Default.bCoopWeaponMode;
+	WeaponsCheck.Align = TA_Left;
+	ControlOffset += 25;
+
+	SetupNetworkOptions();
+}
+
+function AfterCreate()
+{
+	Super.AfterCreate();
+
+	DesiredWidth = 270;
+	DesiredHeight = ControlOffset;
+
+	LoadCurrentValues();
+	Initialized = True;
+}
+
+function SetupNetworkOptions()
+{
+	local int ControlWidth, ControlLeft, ControlRight;
+	local int CenterWidth, CenterPos, ButtonWidth, ButtonLeft;
+
+	ControlWidth = WinWidth/2.5;
+	ControlLeft = (WinWidth/2 - ControlWidth)/2;
+	ControlRight = WinWidth/2 + ControlLeft;
+
+	CenterWidth = (WinWidth/4)*3;
+	CenterPos = (WinWidth - CenterWidth)/2;
+
+	if(ServerParent.bNetworkGame)
+	{
+		// Max Players
+		MaxPlayersEdit = UWindowEditControl(CreateControl(class'UWindowEditControl', ControlLeft, ControlOffset, ControlWidth, 1));
+		MaxPlayersEdit.SetText(MaxPlayersText);
+		MaxPlayersEdit.SetHelpText(MaxPlayersHelp);
+		MaxPlayersEdit.SetFont(F_Normal);
+		MaxPlayersEdit.SetNumericOnly(True);
+		MaxPlayersEdit.SetMaxLength(2);
+		MaxPlayersEdit.Align = TA_Left;
+		MaxPlayersEdit.SetDelayedNotify(True);
+		ControlOffset += 25;
+
+		// Max Spectators
+		MaxSpectatorsEdit = UWindowEditControl(CreateControl(class'UWindowEditControl', ControlRight, ControlOffset, ControlWidth, 1));
+		MaxSpectatorsEdit.SetText(MaxSpectatorsText);
+		MaxSpectatorsEdit.SetHelpText(MaxSpectatorsHelp);
+		MaxSpectatorsEdit.SetFont(F_Normal);
+		MaxSpectatorsEdit.SetNumericOnly(True);
+		MaxSpectatorsEdit.SetMaxLength(2);
+		MaxSpectatorsEdit.Align = TA_Left;
+		MaxSpectatorsEdit.SetDelayedNotify(True);
+		ControlOffset += 25;
+	}
+}
+
+
+function LoadCurrentValues()
+{
+}
+
+function BeforePaint(Canvas C, float X, float Y)
+{
+	local int ControlWidth, ControlLeft, ControlRight;
+	local int CenterWidth, CenterPos, ButtonWidth, ButtonLeft;
+
+	Super.BeforePaint(C, X, Y);
+
+	ControlWidth = WinWidth/2.5;
+	ControlLeft = (WinWidth/2 - ControlWidth)/2;
+	ControlRight = WinWidth/2 + ControlLeft;
+
+	CenterWidth = (WinWidth/4)*3;
+	CenterPos = (WinWidth - CenterWidth)/2;
+
+	FragEdit.SetSize(ControlWidth, 1);
+	FragEdit.WinLeft = CenterPos;
+	FragEdit.EditBoxWidth = 25;
+
+	TimeEdit.SetSize(ControlWidth, 1);
+	TimeEdit.WinLeft = CenterPos;
+	TimeEdit.EditBoxWidth = 25;
+
+	MaxArenaEdit.SetSize(ControlWidth, 1);
+	MaxArenaEdit.WinLeft = CenterPos;
+	MaxArenaEdit.EditBoxWidth = 25;
+	
+	MatchWaitEdit.SetSize(ControlWidth, 1);
+	MatchWaitEdit.WinLeft = CenterPos;
+	MatchWaitEdit.EditBoxWidth = 25;
+
+	if(MaxPlayersEdit != None)
+	{
+		MaxPlayersEdit.SetSize(ControlWidth, 1);
+		MaxPlayersEdit.WinLeft = CenterPos;
+		MaxPlayersEdit.EditBoxWidth = 25;
+	}
+
+	if(MaxSpectatorsEdit != None)
+	{
+		MaxSpectatorsEdit.SetSize(ControlWidth, 1);
+		MaxSpectatorsEdit.WinLeft = CenterPos;
+		MaxSpectatorsEdit.EditBoxWidth = 25;
+	}
+
+	WeaponsCheck.SetSize(ControlWidth, 1);
+	WeaponsCheck.WinLeft = CenterPos;
+}
+
+function Notify(UWindowDialogControl C, byte E)
+{
+	if (!Initialized)
+		return;
+
+	Super.Notify(C, E);
+
+	switch(E)
+	{
+	case DE_Change:
+		switch(C)
+		{
+			case FragEdit:
+				FragChanged();
+				break;
+			case TimeEdit:
+				TimeChanged();
+				break;
+			case MaxArenaEdit:
+				MaxArenaChanged();
+				break;
+			case MatchWaitEdit:
+				MatchWaitChanged();
+				break;
+			case MaxPlayersEdit:
+				MaxPlayersChanged();
+				break;
+			case MaxSpectatorsEdit:
+				MaxSpectatorsChanged();
+				break;
+			case WeaponsCheck:
+				WeaponsChecked();
+				break;
+		}
+	}
+}
+
+function FragChanged()
+{
+}
+
+function TimeChanged()
+{
+}
+
+function MaxArenaChanged()
+{
+}
+
+function MatchWaitChanged()
+{
+}
+
+function MaxPlayersChanged()
+{
+}
+
+function MaxSpectatorsChanged()
+{
+}
+
+function WeaponsChecked()
+{
+}
+
+defaultproperties
+{
+     FragText="Arena Matches"
+     FragHelp="The game will end after this number of matches have been played."
+     TimeText="Time Limit"
+     TimeHelp="The game will end if after this many minutes. A value of 0 sets no time limit."
+     MaxArenaText="Arena Team Size"
+     MaxArenaHelp="Maximum size of Arena Teams.  Set to 1 for a 1-on-1 match."
+     MatchWaitText="Time Between Matches"
+     MatchWaitHelp="Amount of time to wait between each match."
+     MaxPlayersText="Max Connections"
+     MaxPlayersHelp="Maximum number of human players allowed to connect to the game."
+     MaxSpectatorsText="Max Spectators"
+     MaxSpectatorsHelp="Maximum number of spectators allowed to connect to the game."
+     WeaponsText="Weapons Stay"
+     WeaponsHelp="If checked, weapons will stay at their pickup location after being picked up, instead of respawning."
+     ControlOffset=20.000000
+}

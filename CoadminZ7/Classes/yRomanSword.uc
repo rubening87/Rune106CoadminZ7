@@ -1,0 +1,1 @@
+class yRomanSword extends romansword;
